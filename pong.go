@@ -36,4 +36,6 @@ func main() {
 	b := <-table
 	fmt.Printf("hit count :: %d\n", b.hitcount)
 
+	panic("Panic to show info")
+
 }
