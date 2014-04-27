@@ -18,7 +18,12 @@ func main() {
 	fmt.Printf("private key:\n%x\n", prvkey)
 
 	hash256 := sha256.New()
+
 	hash256.Write(pubkey[:])
 	fmt.Printf("hash  public key:\n%x\n", hash256.Sum(nil))
+
+	hash256.Reset()
+	hash256.Write(prvkey[:])
+	fmt.Printf("hash private key:\n%x\n", hash256.Sum(nil))
 
 }
