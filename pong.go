@@ -4,6 +4,8 @@
 // reference / inspiration:
 // http://www.youtube.com/watch?v=QDDwwePbDtw (Sameer Ajmani)
 //
+
+// pong is an exploration of goroutines and channels
 package main
 
 import (

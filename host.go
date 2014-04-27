@@ -3,6 +3,8 @@
 //
 // Lightly mimics the unix host command
 //
+
+// host resolves a dns name to ip(s)
 package main
 
 import (
