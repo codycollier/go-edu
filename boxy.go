@@ -4,6 +4,7 @@ package main
 import (
 	"code.google.com/p/go.crypto/nacl/box"
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 )
 
@@ -13,7 +14,11 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 	}
-	fmt.Printf(" public key:\n%s\n", pubkey)
-	fmt.Printf("private key:\n%s\n", prvkey)
+	fmt.Printf(" public key:\n%x\n", pubkey)
+	fmt.Printf("private key:\n%x\n", prvkey)
+
+	hash256 := sha256.New()
+	hash256.Write(pubkey[:])
+	fmt.Printf("hash  public key:\n%x\n", hash256.Sum(nil))
 
 }
