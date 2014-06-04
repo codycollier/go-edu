@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 )
 
 func connection_handler(conn net.Conn) {
 	fmt.Printf("Connection handler started for %s\n", conn.RemoteAddr())
-	io.Copy(conn, conn)
+	out := io.MultiWriter(conn, os.Stdout)
+	io.Copy(out, conn)
 	conn.Close()
 	fmt.Printf("Connection closed by %s\n", conn.RemoteAddr())
 }
