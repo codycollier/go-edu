@@ -15,7 +15,7 @@ func connection_handler(conn net.Conn) {
 
 func main() {
 
-	srv, err := net.Listen("tcp", ":2323")
+	srv, err := net.Listen("tcp", "127.0.0.1:2323")
 	if err != nil {
 		fmt.Println("Error starting service")
 		fmt.Printf("Error: %s", err)
