@@ -9,7 +9,6 @@ func main() {
 
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 
-	//conn := new(net.UDPConn)
 	conn, err := net.ListenPacket("udp", ":0")
 	defer conn.Close()
 

@@ -13,8 +13,10 @@ func main() {
 
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 
-	listenAddr, _ := net.ResolveUDPAddr("udp", "127.0.0.1:2323")
-	srv, err := net.ListenUDP("udp", listenAddr)
+	//listenAddr, _ := net.ResolveUDPAddr("udp", "127.0.0.1:2323")
+	//srv, err := net.ListenUDP("udp", listenAddr)
+
+	srv, err := net.ListenPacket("udp", "127.0.0.1:2323")
 	defer srv.Close()
 	if err != nil {
 		log.Println("Error starting service")
@@ -23,18 +25,19 @@ func main() {
 	}
 
 	packet := make([]byte, 64*1024)
-	oob := make([]byte, 64*1024)
+	//oob := make([]byte, 64*1024)
 
 	for {
 
-		numBytesPacket, numBytesOOB, flags, fromAddr, err := srv.ReadMsgUDP(packet, oob)
+		//numBytesPacket, numBytesOOB, flags, fromAddr, err := srv.ReadMsgUDP(packet, oob)
+		//_ = numBytesOOB
+		//_ = flags
+
+		numBytesPacket, fromAddr, err := srv.ReadFrom(packet)
 		if err != nil {
 			log.Println("Error accepting incoming packet")
 			log.Printf("Error: %v", err)
 		}
-
-		_ = numBytesOOB
-		_ = flags
 
 		if numBytesPacket > 0 {
 			go packet_handler(packet, numBytesPacket, fromAddr)
