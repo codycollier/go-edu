@@ -2,10 +2,10 @@
 package main
 
 import (
-	"code.google.com/p/go.crypto/nacl/box"
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
+	"golang.org/x/crypto/nacl/box"
 )
 
 func main() {
