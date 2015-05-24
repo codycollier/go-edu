@@ -4,6 +4,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net"
 	"strings"
 )
@@ -63,7 +64,7 @@ func (p *partyLine) service() {
 	for {
 		select {
 		case msg := <-p.input:
-			fmt.Printf("user: %s, message: %s", msg.user.nick, msg.text)
+			log.Printf("user: %s, message: %s", msg.user.nick, msg.text)
 		}
 	}
 }
@@ -74,17 +75,25 @@ func (p *partyLine) addUser(user *chatUser) {
 
 // handleConnection initializes new incoming users
 func handleConnection(connection net.Conn, partyline *partyLine) {
+	log.Printf("New connection from: %s\n", connection.RemoteAddr())
+
 	user := new(chatUser)
 	user.reader = bufio.NewReader(connection)
 	user.writer = bufio.NewWriter(connection)
 	user.setNick()
+
 	welcome := fmt.Sprintf("Welcome %s! Joining the line...\n", user.nick)
 	user.send(welcome)
 	user.joinChat(partyline)
+	log.Printf("New user online %s@%s", user.nick, connection.RemoteAddr())
+
 }
 
 // Listen, accept connections, and connect them to the party line
 func main() {
+
+	log.SetFlags(log.Ldate | log.Lmicroseconds)
+	log.Println("Starting up...")
 
 	partyline := new(partyLine)
 	partyline.start()
