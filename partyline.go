@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -112,13 +113,16 @@ func newUser(connection net.Conn, partyline *partyLine) {
 // main starts the main listener and routes new connections
 func main() {
 
+	var listenAddress = flag.String("listen", "localhost:2323", "'address:port' on which the server should listen")
+	flag.Parse()
+
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 	log.Println("Starting up...")
 
 	partyline := new(partyLine)
 	partyline.start()
 
-	listener, _ := net.Listen("tcp", ":2323")
+	listener, _ := net.Listen("tcp4", *listenAddress)
 	defer listener.Close()
 
 	for {
