@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"net"
 	"strings"
 )
@@ -28,15 +29,39 @@ func (user *chatUser) joinChat(partyline *partyLine) {
 	for {
 		line, _ := user.reader.ReadString('\n')
 		// send to the partyline
-		partyline.in <- line
+		msg := new(message)
+		msg.user = user
+		msg.text = line
+		partyline.input <- msg
 	}
 
+}
+
+// message represents the details of a singe chat message from a user
+type message struct {
+	text string
+	user *chatUser
 }
 
 // partyLine manages the communication between all chatUser participants
 type partyLine struct {
 	users []*chatUser
-	in    chan string
+	input chan *message
+}
+
+func (p *partyLine) start() {
+	p.users = make([]*chatUser, 0)
+	p.input = make(chan *message)
+	go p.service()
+}
+
+func (p *partyLine) service() {
+	for {
+		select {
+		case msg := <-p.input:
+			fmt.Printf("user: %s, message: %s", msg.user.nick, msg.text)
+		}
+	}
 }
 
 func (p *partyLine) addUser(user *chatUser) {
@@ -49,6 +74,9 @@ func handleConnection(connection net.Conn, partyline *partyLine) {
 	user.reader = bufio.NewReader(connection)
 	user.writer = bufio.NewWriter(connection)
 	user.setNick()
+	welcome := fmt.Sprintf("Welcome %s! Joining the line...", user.nick)
+	user.writer.WriteString(welcome)
+	user.writer.Flush()
 	user.joinChat(partyline)
 }
 
@@ -56,6 +84,7 @@ func handleConnection(connection net.Conn, partyline *partyLine) {
 func main() {
 
 	partyline := new(partyLine)
+	partyline.start()
 
 	listener, _ := net.Listen("tcp", ":2323")
 	defer listener.Close()
