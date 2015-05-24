@@ -34,7 +34,11 @@ func (user *chatUser) joinChat(partyline *partyLine) {
 		msg.text = line
 		partyline.input <- msg
 	}
+}
 
+func (user *chatUser) send(msg string) {
+	user.writer.WriteString(msg)
+	user.writer.Flush()
 }
 
 // message represents the details of a singe chat message from a user
@@ -74,9 +78,8 @@ func handleConnection(connection net.Conn, partyline *partyLine) {
 	user.reader = bufio.NewReader(connection)
 	user.writer = bufio.NewWriter(connection)
 	user.setNick()
-	welcome := fmt.Sprintf("Welcome %s! Joining the line...", user.nick)
-	user.writer.WriteString(welcome)
-	user.writer.Flush()
+	welcome := fmt.Sprintf("Welcome %s! Joining the line...\n", user.nick)
+	user.send(welcome)
 	user.joinChat(partyline)
 }
 
