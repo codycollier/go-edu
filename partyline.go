@@ -66,6 +66,11 @@ type message struct {
 	user *chatUser
 }
 
+func (m *message) String() string {
+	message_as_string := fmt.Sprintf("%s > %s", m.user.nick, m.text)
+	return message_as_string
+}
+
 // partyLine is a service which takes messages on an input channel and
 // distributes those messages to all participants on the line.
 type partyLine struct {
@@ -84,6 +89,9 @@ func (p *partyLine) service() {
 		select {
 		case msg := <-p.input:
 			log.Printf("%s> %s", msg.user.nick, msg.text)
+			for _, user := range p.users {
+				user.send(msg.String())
+			}
 		}
 	}
 }
