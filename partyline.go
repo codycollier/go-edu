@@ -26,7 +26,7 @@ func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 	user.partyline = partyline
 
 	user.setNick()
-	welcome := fmt.Sprintf("Welcome %s!\nTo talk, type a message and hit return.\nJoining the line...", user.nick)
+	welcome := fmt.Sprintf("Welcome %s!\nTo talk, type a message and hit return.\nJoining the line...\n", user.nick)
 	user.send(welcome)
 	user.partyline.addUser(user)
 
@@ -67,7 +67,7 @@ type message struct {
 }
 
 func (m *message) String() string {
-	message_as_string := fmt.Sprintf("%s > %s", m.user.nick, m.text)
+	message_as_string := fmt.Sprintf("%s:> %s", m.user.nick, m.text)
 	return message_as_string
 }
 
@@ -88,9 +88,10 @@ func (p *partyLine) service() {
 	for {
 		select {
 		case msg := <-p.input:
-			log.Printf("%s> %s", msg.user.nick, msg.text)
+			msg_string := msg.String()
+			log.Printf(msg_string)
 			for _, user := range p.users {
-				user.send(msg.String())
+				user.send(msg_string)
 			}
 		}
 	}
