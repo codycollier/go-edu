@@ -26,7 +26,7 @@ func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 	user.partyline = partyline
 
 	user.setNick()
-	welcome := fmt.Sprintf("Welcome %s! Joining the line...\n", user.nick)
+	welcome := fmt.Sprintf("Welcome %s!\nTo talk, type a message and hit return.\nJoining the line...", user.nick)
 	user.send(welcome)
 	user.partyline.addUser(user)
 
