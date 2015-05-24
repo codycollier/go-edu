@@ -102,7 +102,7 @@ func (p *partyLine) service() {
 		select {
 		case msg := <-p.input:
 			msg_string := msg.String()
-			log.Printf(msg_string)
+			log.Printf("[%s] %s", msg.user.ident(), msg_string)
 			for _, user := range p.users {
 				user.send(msg_string)
 			}
