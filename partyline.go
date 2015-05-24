@@ -17,6 +17,7 @@ type chatUser struct {
 	partyline *partyLine
 }
 
+// initialize sets up a new user and connects it to the party line
 func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 
 	user.reader = bufio.NewReader(connection)
@@ -32,6 +33,7 @@ func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 
 }
 
+// setNick interacts with the user to obtain and set the desired nickname
 func (user *chatUser) setNick() {
 	user.writer.WriteString("Enter Nickname: ")
 	user.writer.Flush()
@@ -39,8 +41,8 @@ func (user *chatUser) setNick() {
 	user.nick = strings.TrimSpace(nick)
 }
 
+// inputLoop is the main input handler for a given user
 func (user *chatUser) inputLoop() {
-
 	for {
 		// wait for new input from the user
 		line, _ := user.reader.ReadString('\n')
@@ -53,6 +55,7 @@ func (user *chatUser) inputLoop() {
 	}
 }
 
+// send is a helper for processing and sending a message to a user
 func (user *chatUser) send(msg string) {
 	user.writer.WriteString(msg)
 	user.writer.Flush()
@@ -70,21 +73,24 @@ type partyLine struct {
 	input chan *message
 }
 
+// start the partyline service
 func (p *partyLine) start() {
 	p.users = make([]*chatUser, 0)
 	p.input = make(chan *message)
 	go p.service()
 }
 
+// service is the main io loop for the party line
 func (p *partyLine) service() {
 	for {
 		select {
 		case msg := <-p.input:
-			log.Printf("user: %s, message: %s", msg.user.nick, msg.text)
+			log.Printf("%s> %s", msg.user.nick, msg.text)
 		}
 	}
 }
 
+// addUser adds a new user to the party line
 func (p *partyLine) addUser(user *chatUser) {
 	p.users = append(p.users, user)
 }
