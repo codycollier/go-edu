@@ -92,7 +92,7 @@ func (p *partyLine) addUser(user *chatUser) {
 	p.users = append(p.users, user)
 }
 
-// handleConnection initializes new incoming users
+// newUser takes new user connections and handles initialization
 func newUser(connection net.Conn, partyline *partyLine) {
 	log.Printf("New connection from: %s\n", connection.RemoteAddr())
 	user := new(chatUser)
@@ -100,7 +100,7 @@ func newUser(connection net.Conn, partyline *partyLine) {
 	log.Printf("New user online %s@%s", user.nick, connection.RemoteAddr())
 }
 
-// Listen, accept connections, and connect them to the party line
+// main starts the main listener and routes new connections
 func main() {
 
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
