@@ -14,14 +14,16 @@ import (
 // an input loop running in a go routine, which takes messages typed by the
 // user and sends them to the party line.
 type chatUser struct {
-	reader    *bufio.Reader
-	writer    *bufio.Writer
-	nick      string
-	partyline *partyLine
+	connection net.Conn
+	reader     *bufio.Reader
+	writer     *bufio.Writer
+	nick       string
+	partyline  *partyLine
 }
 
 func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 
+	user.connection = connection
 	user.reader = bufio.NewReader(connection)
 	user.writer = bufio.NewWriter(connection)
 	user.partyline = partyline
@@ -35,6 +37,10 @@ func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
 
 }
 
+func (user *chatUser) ident() string {
+	return fmt.Sprintf("%s@%s", user.nick, user.connection.RemoteAddr())
+}
+
 func (user *chatUser) setNick() {
 	user.writer.WriteString("Enter Nickname: ")
 	user.writer.Flush()
@@ -46,7 +52,13 @@ func (user *chatUser) inputLoop() {
 	for {
 
 		// block and wait for new input from the user
-		line, _ := user.reader.ReadString('\n')
+		line, err := user.reader.ReadString('\n')
+		if err != nil {
+			log.Printf("[%s] Error reading from user\n", user.ident())
+			log.Printf("[%s] Err: %s\n", user.ident(), err)
+			log.Printf("[%s] Halting input loop for user", user.ident())
+			return
+		}
 
 		// send input to the partyline
 		msg := new(message)
@@ -107,7 +119,7 @@ func newUser(connection net.Conn, partyline *partyLine) {
 	log.Printf("New connection from: %s\n", connection.RemoteAddr())
 	user := new(chatUser)
 	user.initialize(connection, partyline)
-	log.Printf("New user online %s@%s", user.nick, connection.RemoteAddr())
+	// log.Printf("New user online %s", user.ident())
 }
 
 // main starts the main listener and routes new connections
@@ -122,8 +134,14 @@ func main() {
 	partyline := new(partyLine)
 	partyline.start()
 
-	listener, _ := net.Listen("tcp4", *listenAddress)
+	listener, err := net.Listen("tcp4", *listenAddress)
+	if err != nil {
+		log.Printf("Error starting listener on %s\n", *listenAddress)
+		log.Printf("Err: %s\n", err)
+		return
+	}
 	defer listener.Close()
+	log.Printf("Listening for new connections on %s\n", *listenAddress)
 
 	for {
 		connection, _ := listener.Accept()
