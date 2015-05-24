@@ -11,9 +11,25 @@ import (
 
 // chatUser is the structure and management of a single chat participant
 type chatUser struct {
-	reader *bufio.Reader
-	writer *bufio.Writer
-	nick   string
+	reader    *bufio.Reader
+	writer    *bufio.Writer
+	nick      string
+	partyline *partyLine
+}
+
+func (user *chatUser) initialize(connection net.Conn, partyline *partyLine) {
+
+	user.reader = bufio.NewReader(connection)
+	user.writer = bufio.NewWriter(connection)
+	user.partyline = partyline
+
+	user.setNick()
+	welcome := fmt.Sprintf("Welcome %s! Joining the line...\n", user.nick)
+	user.send(welcome)
+	user.partyline.addUser(user)
+
+	go user.inputLoop()
+
 }
 
 func (user *chatUser) setNick() {
@@ -23,17 +39,17 @@ func (user *chatUser) setNick() {
 	user.nick = strings.TrimSpace(nick)
 }
 
-func (user *chatUser) joinChat(partyline *partyLine) {
-
-	partyline.addUser(user)
+func (user *chatUser) inputLoop() {
 
 	for {
+		// wait for new input from the user
 		line, _ := user.reader.ReadString('\n')
-		// send to the partyline
+
+		// send input to the partyline
 		msg := new(message)
 		msg.user = user
 		msg.text = line
-		partyline.input <- msg
+		user.partyline.input <- msg
 	}
 }
 
@@ -74,19 +90,11 @@ func (p *partyLine) addUser(user *chatUser) {
 }
 
 // handleConnection initializes new incoming users
-func handleConnection(connection net.Conn, partyline *partyLine) {
+func newUser(connection net.Conn, partyline *partyLine) {
 	log.Printf("New connection from: %s\n", connection.RemoteAddr())
-
 	user := new(chatUser)
-	user.reader = bufio.NewReader(connection)
-	user.writer = bufio.NewWriter(connection)
-	user.setNick()
-
-	welcome := fmt.Sprintf("Welcome %s! Joining the line...\n", user.nick)
-	user.send(welcome)
-	user.joinChat(partyline)
+	user.initialize(connection, partyline)
 	log.Printf("New user online %s@%s", user.nick, connection.RemoteAddr())
-
 }
 
 // Listen, accept connections, and connect them to the party line
@@ -104,7 +112,7 @@ func main() {
 	for {
 		connection, _ := listener.Accept()
 		defer connection.Close()
-		go handleConnection(connection, partyline)
+		go newUser(connection, partyline)
 	}
 
 }
