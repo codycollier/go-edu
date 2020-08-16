@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -58,6 +60,15 @@ func main() {
 	}
 	zlog.Error("oh no!")
 	zlog.Info("back on track!")
+
+	prefix := func(msg string) string {
+		return fmt.Sprintf("[section3] %s", msg)
+	}
+
+	for i := 0; i < 5; i++ {
+		zlog.Info(prefix("foo"), zap.Int("count", i))
+		zlog.Warn(prefix("baz"), zap.Int("count", i))
+	}
 	zlog.Info("done")
 
 }
